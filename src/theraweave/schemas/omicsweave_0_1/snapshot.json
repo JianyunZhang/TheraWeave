@@ -1,0 +1,23 @@
+{
+  "artifact_hashes": {
+    "LICENSE": "e315a4db343aa29f4b1532f901164b7955834599e5fdcf23dfbdd8d815c37013",
+    "dataset.schema.json": "9d03f402271bdd43fbae31eccf0ac90eb09a5f0ab666587274c3976ef305bdee",
+    "differential.columns.json": "2ad3349ddacef37ca8be35f36263da28a94d5c61618edcfb6f4055a7b48b14a4",
+    "differential.rules.json": "a82e351e841eb6d508c4980240e9f14b32c5be3f0a5352ff32102ddfd1bc2fc3",
+    "manifest.schema.json": "1c5e2bf869183d8f74bcd67c80e5d9b78365a3e6184ad8f73527f613f6e010ea"
+  },
+  "capture_date": "2026-10-30",
+  "contract_version": "0.1",
+  "source_hashes": {
+    "LICENSE": "e315a4db343aa29f4b1532f901164b7955834599e5fdcf23dfbdd8d815c37013",
+    "src/omicsweave/__init__.py": "4102b6b2a50fd97d283a5ca602d0c88ccd71eb97dd8d16b631e0ca6149d43146",
+    "src/omicsweave/contract/__init__.py": "62a933bedfa1d09cc1966b9cf975361916824a074dbc7903a073efb808ae3e71",
+    "src/omicsweave/contract/dataset.py": "bb21f062438202153a5de2f1de3038f71cccbbe937093c2fa96898f24ea5e8ac",
+    "src/omicsweave/contract/manifest.py": "faffb4e5d70027d9536f4ff3e0f2dc4af111416477fb7bcdb598ffa81919f7c4",
+    "src/omicsweave/contract/tables.py": "12d03c90176761efea20bd06921c69348aa2ceaa94c250ecd2cce865a0c22cf1",
+    "src/omicsweave/core/model.py": "537ebe777cb643f88008b97ee1ecb5307b5c2865722e85816f849746f5eec40f",
+    "src/omicsweave/core/provenance.py": "b842511b103e7c8a1f97d630f4614c6e1db41b10b4a7ab9d1b1f3ab727e17940"
+  },
+  "status": "local_draft_snapshot_not_upstream_release",
+  "upstream_version": "0.1.0.dev0"
+}

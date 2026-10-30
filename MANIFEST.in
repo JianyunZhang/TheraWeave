@@ -1,0 +1,6 @@
+include CITATION.cff
+include .gitattributes
+recursive-include docs *.md
+recursive-include tools *.py
+recursive-include tests *.py
+recursive-include src/theraweave/schemas *.json LICENSE

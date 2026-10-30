@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TheraWeave local import context (not the OmicsWeave exchange contract)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["context_id", "source_taxon_id", "disease_or_phenotype", "primary_endpoint", "feature_namespaces"],
+  "properties": {
+    "context_id": {"type": "string", "minLength": 1},
+    "source_taxon_id": {"enum": [10090, 9606]},
+    "disease_or_phenotype": {"type": "string", "minLength": 1},
+    "primary_endpoint": {"type": "string", "minLength": 1},
+    "experimental_unit": {"type": ["string", "null"], "minLength": 1},
+    "notes": {"type": "string"},
+    "feature_namespaces": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"enum": ["transcriptomics", "proteomics", "metabolomics", "mfa"]},
+      "additionalProperties": {
+        "type": "object",
+        "required": ["namespace", "entity_type"],
+        "additionalProperties": false,
+        "properties": {
+          "namespace": {"type": "string", "minLength": 1},
+          "entity_type": {"enum": ["gene", "transcript", "protein", "protein_group", "metabolite", "feature", "reaction"]}
+        }
+      }
+    }
+  }
+}

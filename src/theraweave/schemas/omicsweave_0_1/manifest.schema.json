@@ -1,0 +1,138 @@
+{
+  "$defs": {
+    "FileRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Kind"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "input",
+            "output"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size": {
+          "title": "Size",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "role",
+        "sha256",
+        "size"
+      ],
+      "title": "FileRecord",
+      "type": "object"
+    },
+    "Omics": {
+      "enum": [
+        "transcriptomics",
+        "proteomics",
+        "metabolomics",
+        "mfa"
+      ],
+      "title": "Omics",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "bundle_schema_version": {
+      "default": "0.1",
+      "title": "Bundle Schema Version",
+      "type": "string"
+    },
+    "command": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Command",
+      "type": "array"
+    },
+    "config_sha256": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Config Sha256"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "experiment_id": {
+      "title": "Experiment Id",
+      "type": "string"
+    },
+    "files": {
+      "items": {
+        "$ref": "#/$defs/FileRecord"
+      },
+      "title": "Files",
+      "type": "array"
+    },
+    "omics": {
+      "items": {
+        "$ref": "#/$defs/Omics"
+      },
+      "title": "Omics",
+      "type": "array"
+    },
+    "omicsweave_version": {
+      "default": "0.1.0.dev0",
+      "title": "Omicsweave Version",
+      "type": "string"
+    },
+    "parameters": {
+      "additionalProperties": true,
+      "title": "Parameters",
+      "type": "object"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "python_version": {
+      "title": "Python Version",
+      "type": "string"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "project_id",
+    "experiment_id"
+  ],
+  "title": "RunManifest",
+  "type": "object"
+}

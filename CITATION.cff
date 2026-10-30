@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite its archived release when available."
+title: "TheraWeave: Auditable omics evidence for target validation planning"
+type: software
+version: 0.1.0.dev0
+license: BSD-3-Clause
+authors:
+  - name: The TheraWeave Developers
+abstract: >-
+  A pre-alpha local toolkit for omics evidence import, offline knowledge
+  snapshots, transparent experimental prioritisation and versioned validation
+  planning. Its rules have not been calibrated on independent biological studies.

@@ -1,0 +1,182 @@
+[
+  {
+    "description": "比较 ID，对应 experiment.yaml",
+    "kind": "str",
+    "name": "contrast_id",
+    "required": true
+  },
+  {
+    "description": "disease_effect / treatment_effect / time_effect / other",
+    "kind": "str",
+    "name": "contrast_role",
+    "required": true
+  },
+  {
+    "description": "组织",
+    "kind": "str",
+    "name": "tissue",
+    "required": true
+  },
+  {
+    "description": "组学",
+    "kind": "str",
+    "name": "omics",
+    "required": true
+  },
+  {
+    "description": "特征 ID，类型见 dataset.json；MFA 为反应 ID",
+    "kind": "str",
+    "name": "feature_id",
+    "required": true
+  },
+  {
+    "description": "特征名称",
+    "kind": "str",
+    "name": "feature_name",
+    "required": false
+  },
+  {
+    "description": "分子组相对分母组的 log2 倍数变化；均值接近 0 或跨 0 时可为空",
+    "kind": "float",
+    "name": "log2fc",
+    "required": true
+  },
+  {
+    "description": "效应量；MFA 必填",
+    "kind": "float",
+    "name": "effect_size",
+    "required": false
+  },
+  {
+    "description": "如 hedges_g",
+    "kind": "str",
+    "name": "effect_size_type",
+    "required": false
+  },
+  {
+    "description": "检验统计量",
+    "kind": "float",
+    "name": "statistic",
+    "required": false
+  },
+  {
+    "description": "主检验的 p 值；只给效应量时为空",
+    "kind": "float",
+    "name": "pvalue",
+    "required": true
+  },
+  {
+    "description": "主检验的校正后 p 值",
+    "kind": "float",
+    "name": "padj",
+    "required": true
+  },
+  {
+    "description": "校正方法，如 fdr_bh；未校正时为 none",
+    "kind": "str",
+    "name": "padj_method",
+    "required": true
+  },
+  {
+    "description": "分子组实际参与检验的生物学重复数",
+    "kind": "int",
+    "name": "n_numerator",
+    "required": true
+  },
+  {
+    "description": "分母组实际参与检验的生物学重复数",
+    "kind": "int",
+    "name": "n_denominator",
+    "required": true
+  },
+  {
+    "description": "秩检验在该样本量下可达到的最小 p 值",
+    "kind": "float",
+    "name": "min_achievable_p",
+    "required": false
+  },
+  {
+    "description": "检验方法或证据路径，如 deseq2、limma、ttest、effect_size_only",
+    "kind": "str",
+    "name": "method",
+    "required": true
+  },
+  {
+    "description": "分子组均值；MFA 必填，单位见 units",
+    "kind": "float",
+    "name": "mean_numerator",
+    "required": false
+  },
+  {
+    "description": "分母组均值；MFA 必填",
+    "kind": "float",
+    "name": "mean_denominator",
+    "required": false
+  },
+  {
+    "description": "均值的单位；MFA 必填，如 nmol/min/g tissue",
+    "kind": "str",
+    "name": "units",
+    "required": false
+  },
+  {
+    "description": "推断单位，如 biological_replicate；MFA 必填",
+    "kind": "str",
+    "name": "inference_unit",
+    "required": false
+  },
+  {
+    "description": "statistical_test / effect_size_only / insufficient；MFA 必填",
+    "kind": "str",
+    "name": "evidence_level",
+    "required": false
+  },
+  {
+    "description": "是否按 selection_rule 入选",
+    "kind": "bool",
+    "name": "selected",
+    "required": false
+  },
+  {
+    "description": "入选规则的文字描述",
+    "kind": "str",
+    "name": "selection_rule",
+    "required": false
+  },
+  {
+    "description": "MFA：通量可辨识性分档，如 well_constrained / bound_pinned",
+    "kind": "str",
+    "name": "identifiability",
+    "required": false
+  },
+  {
+    "description": "MFA：拟合贴在约束边界的动物比例",
+    "kind": "float",
+    "name": "frac_at_bound",
+    "required": false
+  },
+  {
+    "description": "MFA：生物学稳定性校准的入选概率",
+    "kind": "float",
+    "name": "selection_probability",
+    "required": false
+  },
+  {
+    "description": "MFA：重抽样下方向一致的比例",
+    "kind": "float",
+    "name": "direction_stability",
+    "required": false
+  },
+  {
+    "description": "MFA：置换检验 p 值",
+    "kind": "float",
+    "name": "permutation_pvalue",
+    "required": false
+  },
+  {
+    "description": "以分号分隔的标记，如 low_n;underpowered;effect_size_undefined",
+    "kind": "str",
+    "name": "flags",
+    "required": false
+  }
+]

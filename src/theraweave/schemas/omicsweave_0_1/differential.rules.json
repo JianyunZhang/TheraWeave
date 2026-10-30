@@ -1,0 +1,18 @@
+{
+  "evidence_levels": [
+    "statistical_test",
+    "effect_size_only",
+    "insufficient"
+  ],
+  "required_by_omics": {
+    "mfa": [
+      "effect_size",
+      "effect_size_type",
+      "mean_numerator",
+      "mean_denominator",
+      "units",
+      "inference_unit",
+      "evidence_level"
+    ]
+  }
+}

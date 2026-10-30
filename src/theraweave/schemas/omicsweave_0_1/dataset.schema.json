@@ -1,0 +1,89 @@
+{
+  "$defs": {
+    "Omics": {
+      "enum": [
+        "transcriptomics",
+        "proteomics",
+        "metabolomics",
+        "mfa"
+      ],
+      "title": "Omics",
+      "type": "string"
+    },
+    "ValueType": {
+      "enum": [
+        "counts",
+        "tpm",
+        "intensity",
+        "peak_area",
+        "concentration",
+        "mid_fraction",
+        "flux"
+      ],
+      "title": "ValueType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "feature_id_type": {
+      "title": "Feature Id Type",
+      "type": "string"
+    },
+    "normalization": {
+      "default": "none",
+      "title": "Normalization",
+      "type": "string"
+    },
+    "omics": {
+      "$ref": "#/$defs/Omics"
+    },
+    "scale": {
+      "enum": [
+        "linear",
+        "log2"
+      ],
+      "title": "Scale",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source": {
+      "additionalProperties": true,
+      "title": "Source",
+      "type": "object"
+    },
+    "tissue": {
+      "title": "Tissue",
+      "type": "string"
+    },
+    "units": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Units"
+    },
+    "value_type": {
+      "$ref": "#/$defs/ValueType"
+    }
+  },
+  "required": [
+    "omics",
+    "tissue",
+    "value_type",
+    "scale",
+    "feature_id_type"
+  ],
+  "title": "DatasetMeta",
+  "type": "object"
+}

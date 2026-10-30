@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "theraweave"
+version = "0.1.0.dev0"
+description = "Auditable omics evidence for therapeutic target validation planning"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "BSD-3-Clause"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+authors = [{name = "The TheraWeave Developers"}]
+dependencies = ["pyarrow>=14", "jsonschema>=4.20"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "build>=1", "PyYAML>=6"]
+upstream-audit = ["pydantic>=2.6", "pandas>=2", "numpy>=1.24"]
+
+[project.scripts]
+theraweave = "theraweave.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+theraweave = ["schemas/*.json", "schemas/omicsweave_0_1/*.json", "schemas/omicsweave_0_1/LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--import-mode=importlib"]

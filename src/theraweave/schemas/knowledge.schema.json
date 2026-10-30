@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TheraWeave normalized local knowledge snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "version", "source", "records"],
+  "properties": {
+    "format": {"const": "theraweave.knowledge-snapshot"},
+    "version": {"const": "0.1"},
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "release", "retrieved_at", "origin_url", "license", "synthetic"],
+      "properties": {
+        "name": {"enum": ["OpenTargets", "ChEMBL", "UniProt", "curated"]},
+        "release": {"type": "string", "minLength": 1},
+        "retrieved_at": {"type": "string", "format": "date"},
+        "origin_url": {"type": "string", "minLength": 1},
+        "license": {"type": "string", "minLength": 1},
+        "synthetic": {"type": "boolean"},
+        "coverage_notes": {"type": "string"},
+        "input_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "adapter": {"type": "string"},
+        "auxiliary_input_hashes": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["record_id", "primary_record_id", "primary_study_id", "entity_id", "namespace", "taxon_id", "context_id", "evidence_type", "stance", "direction", "reviewed", "citations", "statement"],
+        "properties": {
+          "record_id": {"type": "string", "minLength": 1},
+          "primary_record_id": {"type": "string", "minLength": 1},
+          "primary_study_id": {"type": ["string", "null"], "minLength": 1},
+          "entity_id": {"type": "string", "minLength": 1},
+          "namespace": {"type": "string", "minLength": 1},
+          "taxon_id": {"type": "integer", "minimum": 1},
+          "context_id": {"type": ["string", "null"], "minLength": 1},
+          "evidence_type": {"enum": ["association", "functional", "direction", "identity", "tool", "risk"]},
+          "stance": {"enum": ["supports", "contradicts", "neutral", "unclear"]},
+          "direction": {"enum": ["inhibit", "activate", "restore", "unknown"]},
+          "reviewed": {"type": "boolean"},
+          "reviewer": {"type": ["string", "null"], "minLength": 1},
+          "citations": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+          "statement": {"type": "string", "minLength": 1},
+          "blocking": {"type": "boolean"},
+          "tool_id": {"type": ["string", "null"], "minLength": 1},
+          "source_payload": {"type": "object"}
+        }
+      }
+    }
+  }
+}
