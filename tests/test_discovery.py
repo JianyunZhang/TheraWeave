@@ -30,6 +30,9 @@ def test_rule_profiles_preserve_unknowns_and_report_sensitivity(pipeline):
     assert a["intervention_direction"] == "inhibit"
     assert a["dimensions"]["risk_review"] == "unknown"
     assert a["dimensions"]["mechanistic_evidence"] == "unknown"
+    assert a["dimensions"]["human_translation"] == "unknown"
+    assert a["ortholog_status"] == "not_provided"
+    assert "human_ortholog_map" in a["gaps"]
     assert a["manual_review_required"] is True
     assert b["bucket"] == "evidence_gap_first" and b["intervention_direction"] == "unknown"
     sensitivity = read_json(pipeline["assessment"] / "sensitivity.json")
@@ -104,6 +107,8 @@ def prepare_review(pipeline):
         "primary_endpoint": {"name": "synthetic endpoint", "unit": "arbitrary_units", "desired_direction": "decrease", "minimum_meaningful_effect": 1.0, "confidence_level": 0.95},
         "design": {k: "Synthetic pre-specified design" for k in ("experimental_unit", "sample_size_basis", "randomization", "blinding", "comparison", "multiplicity_plan", "exclusions", "controls")},
         "decision_rule": "benefit_ci_excludes_zero_and_point_meets_minimum",
+        "effort": {"decision_to_change": "marker_versus_functional_link", "cost_level": "not_recorded", "duration_level": "not_recorded",
+                   "laboratory_capability": "not_recorded", "basis": "Synthetic review; no cost was calculated"},
     }
     write_json(root / "review.json", review)
     reviewed = review_plan(plans, plan["plan_id"], root / "review.json", root / "reviewed")

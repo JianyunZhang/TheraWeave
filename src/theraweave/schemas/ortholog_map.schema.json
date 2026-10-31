@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reviewed ortholog map for human translation context",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "version", "reviewed", "reviewer", "source_name", "source_release", "retrieved_at", "method", "synthetic", "links"],
+  "properties": {
+    "format": {"const": "theraweave.ortholog-map"},
+    "version": {"const": "0.1"},
+    "reviewed": {"const": true},
+    "reviewer": {"type": "string", "minLength": 1},
+    "source_name": {"type": "string", "minLength": 1},
+    "source_release": {"type": "string", "minLength": 1},
+    "retrieved_at": {"type": "string", "format": "date"},
+    "method": {"type": "string", "minLength": 1},
+    "synthetic": {"type": "boolean"},
+    "coverage_notes": {"type": "string"},
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_entity_id", "source_namespace", "source_taxon_id", "orthology_type", "orthologs"],
+        "properties": {
+          "source_entity_id": {"type": "string", "minLength": 1},
+          "source_namespace": {"type": "string", "minLength": 1},
+          "source_taxon_id": {"const": 10090},
+          "orthology_type": {"enum": ["one2one", "one2many", "many2many", "none"]},
+          "orthologs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["entity_id", "namespace", "taxon_id"],
+              "properties": {
+                "entity_id": {"type": "string", "minLength": 1},
+                "namespace": {"type": "string", "minLength": 1},
+                "taxon_id": {"const": 9606}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

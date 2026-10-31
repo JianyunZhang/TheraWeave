@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reviewed external computation request; execution is not included",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "hypothesis_id", "gap_id", "scientific_question", "task_type", "allowed_conclusion", "reviewer", "reviewed_at", "target", "molecule", "network_authorized", "executes_backend"],
+  "properties": {
+    "request_id": {"type": "string", "minLength": 1},
+    "hypothesis_id": {"type": "string", "minLength": 1},
+    "gap_id": {"type": "string", "minLength": 1},
+    "scientific_question": {"type": "string", "minLength": 1},
+    "task_type": {"enum": ["docking", "fep_absolute", "fep_relative", "md", "structure_preparation", "antibody_model"]},
+    "allowed_conclusion": {"enum": ["binding_hypothesis", "structural_compatibility", "conformational_hypothesis", "tool_suggestion"]},
+    "reviewer": {"type": "string", "minLength": 1},
+    "reviewed_at": {"type": "string", "minLength": 1},
+    "network_authorized": {"const": false},
+    "executes_backend": {"const": false},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["taxon_id", "namespace", "entity_id", "construct_id", "sequence_or_structure_sha256", "structure_source", "preparation_assumptions", "identity_basis", "orthology_type", "ortholog_reviewer"],
+      "properties": {
+        "taxon_id": {"enum": [10090, 9606]},
+        "namespace": {"type": "string", "minLength": 1},
+        "entity_id": {"type": "string", "minLength": 1},
+        "construct_id": {"type": "string", "minLength": 1},
+        "sequence_or_structure_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "structure_source": {"type": "string", "minLength": 1},
+        "preparation_assumptions": {"type": "string", "minLength": 1},
+        "identity_basis": {"enum": ["same_entity_as_hypothesis", "reviewed_ortholog", "reviewed_construct"]},
+        "orthology_type": {"enum": ["one2one", "one2many", "many2many", null]},
+        "ortholog_reviewer": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "molecule": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["stable_id", "stereochemistry_or_modification", "content_sha256"],
+      "properties": {
+        "stable_id": {"type": "string", "minLength": 1},
+        "stereochemistry_or_modification": {"type": "string", "minLength": 1},
+        "content_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
+  }
+}

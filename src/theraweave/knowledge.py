@@ -42,6 +42,10 @@ def load_snapshots(paths: list[str | Path]) -> dict:
                 report.add("CLAIM_CONTEXT", "error", path.name, "Mechanistic, directional and risk claims require an explicit context.", row_or_record_id=record["record_id"])
             if record["evidence_type"] == "tool" and record["reviewed"] and not record.get("tool_id"):
                 report.add("TOOL_ID", "error", path.name, "Reviewed tool evidence requires a tool_id.", row_or_record_id=record["record_id"])
+            if any(record.get(key) for key in ("modality", "intervention_mechanism")) and record["evidence_type"] != "tool":
+                report.add("TOOL_ATTRIBUTE", "error", path.name, "Modality and mechanism belong on tool evidence, not on identity or direction records.", row_or_record_id=record["record_id"])
+            if any(record.get(key) for key in ("subcellular_location", "protein_class")) and record["evidence_type"] != "identity":
+                report.add("IDENTITY_ATTRIBUTE", "error", path.name, "Location and protein class belong on identity evidence.", row_or_record_id=record["record_id"])
             # The same primary record/assertion carried by multiple databases
             # is one assertion. Conflicting interpretations remain separate.
             assertion = {k: v for k, v in record.items() if k not in {"record_id", "reviewer", "citations", "statement", "source_payload"}}

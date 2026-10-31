@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "External prediction result; not an observed replicate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "hypothesis_id", "hypothesis_version", "run_id", "tool_name", "tool_version", "parameters", "status", "prediction_type", "quantity_kind", "value", "unit", "favorable_direction", "uncertainty", "applicability_domain", "reference_system", "sampling_note", "artifact_sha256", "warnings", "resource_note", "counts_as_independent_replication", "evidence_level"],
+  "properties": {
+    "request_id": {"type": "string", "minLength": 1},
+    "hypothesis_id": {"type": "string", "minLength": 1},
+    "hypothesis_version": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "tool_name": {"type": "string", "minLength": 1},
+    "tool_version": {"type": "string", "minLength": 1},
+    "parameters": {"type": "object"},
+    "status": {"enum": ["completed", "failed", "inconclusive"]},
+    "prediction_type": {"enum": ["docking_score", "binding_free_energy", "relative_binding_free_energy", "structural_compatibility", "conformational_summary", "antibody_property"]},
+    "quantity_kind": {"enum": ["binding_score", "free_energy", "structural_descriptor", "conformational_descriptor"]},
+    "value": {"type": ["number", "null"]},
+    "unit": {"type": ["string", "null"], "minLength": 1},
+    "favorable_direction": {"enum": ["lower_is_better", "higher_is_better", "not_applicable"]},
+    "uncertainty": {"type": ["string", "null"], "minLength": 1},
+    "applicability_domain": {"type": "string", "minLength": 1},
+    "reference_system": {"type": ["string", "null"], "minLength": 1},
+    "sampling_note": {"type": ["string", "null"], "minLength": 1},
+    "artifact_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "warnings": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "resource_note": {"type": "string", "minLength": 1},
+    "counts_as_independent_replication": {"const": false},
+    "evidence_level": {"const": "predicted"}
+  }
+}

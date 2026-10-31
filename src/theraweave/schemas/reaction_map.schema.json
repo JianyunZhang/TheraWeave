@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reviewed reaction-to-enzyme map; flux control is not asserted",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "version", "reviewed", "reviewer", "model_id", "model_version", "synthetic", "links"],
+  "properties": {
+    "format": {"const": "theraweave.reaction-map"},
+    "version": {"const": "0.1"},
+    "reviewed": {"const": true},
+    "reviewer": {"type": "string", "minLength": 1},
+    "model_id": {"type": "string", "minLength": 1},
+    "model_version": {"type": "string", "minLength": 1},
+    "synthetic": {"type": "boolean"},
+    "coverage_notes": {"type": "string"},
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reaction_id", "namespace", "taxon_id", "relation", "compartment", "directionality", "cross_organ", "flux_control", "components"],
+        "properties": {
+          "reaction_id": {"type": "string", "minLength": 1},
+          "namespace": {"type": "string", "minLength": 1},
+          "taxon_id": {"enum": [10090, 9606]},
+          "relation": {"enum": ["AND", "OR"]},
+          "compartment": {"type": "string", "minLength": 1},
+          "directionality": {"enum": ["reversible", "irreversible", "unknown"]},
+          "cross_organ": {"type": "boolean"},
+          "flux_control": {"const": "mapping_only"},
+          "components": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["entity_id", "namespace", "entity_type"],
+              "properties": {
+                "entity_id": {"type": "string", "minLength": 1},
+                "namespace": {"type": "string", "minLength": 1},
+                "entity_type": {"enum": ["gene", "protein"]}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

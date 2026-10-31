@@ -13,7 +13,9 @@ from .demo import create_demo
 from .project import DiscoveryProject
 from .assessment import assess_archive
 from .knowledge import load_snapshots
-from .planning import create_plans, review_plan, record_outcome
+from .planning import create_plans, review_plan, record_outcome, record_override
+from .candidates import screen_candidates
+from .external import prepare_external_request, record_external_result
 from .core import read_json
 from .source_adapters import convert_source
 
@@ -38,6 +40,9 @@ def main(argv: list[str] | None = None) -> int:
     assess.add_argument("archive", type=Path)
     assess.add_argument("--snapshot", action="append", type=Path, default=[])
     assess.add_argument("--policy", type=Path)
+    assess.add_argument("--ortholog-map", type=Path)
+    assess.add_argument("--reaction-map", type=Path)
+    assess.add_argument("--genetic-evidence", type=Path)
     assess.add_argument("--output", required=True, type=Path)
     plan = commands.add_parser("plan", help="Create draft validation plans from an assessment archive.")
     plan.add_argument("assessment", type=Path)
@@ -51,6 +56,22 @@ def main(argv: list[str] | None = None) -> int:
     feedback.add_argument("reviewed_plan", type=Path)
     feedback.add_argument("--outcome", required=True, type=Path)
     feedback.add_argument("--output", required=True, type=Path)
+    override = commands.add_parser("record-override", help="Record a more conservative decision without erasing the algorithm bucket.")
+    override.add_argument("assessment", type=Path)
+    override.add_argument("--override", required=True, type=Path)
+    override.add_argument("--output", required=True, type=Path)
+    candidates = commands.add_parser("screen-candidates", help="Review a candidate list without treating it as an evidence bundle.")
+    candidates.add_argument("candidates", type=Path)
+    candidates.add_argument("--snapshot", action="append", type=Path, default=[])
+    candidates.add_argument("--output", required=True, type=Path)
+    external = commands.add_parser("prepare-external-request", help="Record a reviewed external computation request without executing it.")
+    external.add_argument("assessment", type=Path)
+    external.add_argument("--request", required=True, type=Path)
+    external.add_argument("--output", required=True, type=Path)
+    prediction = commands.add_parser("record-external-result", help="Record a prediction result without turning it into an observation.")
+    prediction.add_argument("request", type=Path)
+    prediction.add_argument("--result", required=True, type=Path)
+    prediction.add_argument("--output", required=True, type=Path)
     for name in ("validate", "import"):
         command = commands.add_parser(name, help="Validate a draft bundle." if name == "validate" else "Create a new evidence archive and offline report.")
         command.add_argument("bundle", type=Path)
@@ -72,7 +93,9 @@ def main(argv: list[str] | None = None) -> int:
                                                    taxon_id=args.taxon_id, target_map=args.target_map)), "reviewed": False}
         elif args.command == "assess":
             path = assess_archive(args.archive, args.output, snapshot_paths=args.snapshot,
-                                  policy=read_json(args.policy) if args.policy else None)
+                                  policy=read_json(args.policy) if args.policy else None,
+                                  ortholog_map=args.ortholog_map, reaction_map=args.reaction_map,
+                                  genetic_evidence=args.genetic_evidence)
             output = {"output": str(path), "report": str(path / "decision_report.html"), "policy_validated_on_real_studies": False}
         elif args.command == "plan":
             output = {"output": str(create_plans(args.assessment, args.output)), "status": "draft"}
@@ -80,6 +103,15 @@ def main(argv: list[str] | None = None) -> int:
             output = {"output": str(review_plan(args.plans, args.plan_id, args.review, args.output)), "status": "reviewed"}
         elif args.command == "record-outcome":
             output = {"output": str(record_outcome(args.reviewed_plan, args.outcome, args.output))}
+        elif args.command == "record-override":
+            output = {"output": str(record_override(args.assessment, args.override, args.output)), "relaxes_algorithm_decision": False}
+        elif args.command == "screen-candidates":
+            output = {"output": str(screen_candidates(args.candidates, args.output, snapshot_paths=args.snapshot)),
+                      "statistical_inference": False, "profile": "candidate_list"}
+        elif args.command == "prepare-external-request":
+            output = {"output": str(prepare_external_request(args.assessment, args.request, args.output)), "executed": False}
+        elif args.command == "record-external-result":
+            output = {"output": str(record_external_result(args.request, args.result, args.output)), "evidence_level": "predicted"}
         elif args.command == "validate":
             bundle = validate_bundle(args.bundle, allow_draft=args.allow_draft)
             if args.context and bundle.report.valid:

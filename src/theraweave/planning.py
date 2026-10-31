@@ -9,10 +9,22 @@ from .artifacts import new_archive, read_archive, read_member
 from .core import content_id, read_json, sha256_file, write_json
 
 
+def _screen(row: dict, options: list[dict]) -> dict:
+    matched = [item for item in options if item["hypothesis_id"] == row["hypothesis_id"]]
+    return {
+        "rule_version": "modality-rules-1", "not_a_recommendation": True, "screen_does_not_override_bucket": True,
+        "assessment_bucket": row["bucket"],
+        "open_research_probes": [item["modality"] for item in matched if item["disposition"] == "open_research_probe"],
+        "attribute_mismatches": [item["modality"] for item in matched if item["disposition"] == "attribute_mismatch"],
+        "pending_conditions": [item["modality"] for item in matched if item["disposition"] == "pending_conditions"],
+    }
+
+
 def create_plans(assessment_directory, destination) -> Path:
     root, manifest = read_archive(assessment_directory, "theraweave.assessment-preview")
     context = read_member(root, manifest, "context.json")
     assessments = read_member(root, manifest, "assessments.json")
+    options = read_member(root, manifest, "intervention_options.json")
     plans = []
     for row in assessments:
         plans.append({
@@ -31,8 +43,12 @@ def create_plans(assessment_directory, destination) -> Path:
                        "alpha": None, "power_or_precision": None, "variance_source": None,
                        "multiplicity_plan": None, "exclusions": None},
             "decision_rule": None, "review": None,
+            "effort": {"decision_to_change": None, "cost_level": None, "duration_level": None, "laboratory_capability": None, "basis": None},
+            "execution_ready": False, "computed_sample_size": None, "information_gain": None, "claims_reduced_experiment_count": False,
+            "modality_screen": _screen(row, options),
             "alternatives": ["marker_or_compensation", "tool_off_target", "model_mismatch", "non_specific_toxicity"],
-            "unresolved": ["experimental_design", "primary_endpoint_readout", "effect_and_precision_thresholds", "tool_specificity"],
+            "unresolved": ["experimental_design", "primary_endpoint_readout", "effect_and_precision_thresholds",
+                           "tool_specificity", "modality_selectivity_exposure_or_delivery", "decision_cost_duration_and_laboratory_capability"],
         })
     with new_archive(destination, format_name="theraweave.validation-plans", identity={"parent_run_id": manifest["run_id"],
                      "parent_sha256": sha256_file(root / "manifest.json")}, forbidden_roots=[root]) as temp:
@@ -56,6 +72,25 @@ def _finite_number(value, name, positive=False):
         raise ValueError(f"{name} must be a finite{' positive' if positive else ''} number.")
 
 
+_DECISIONS = {"marker_versus_functional_link", "target_versus_off_target", "flux_mechanism_versus_concentration",
+              "specific_effect_versus_toxicity", "species_translation", "other_preregistered"}
+_COST = {"not_recorded", "low", "moderate", "high"}
+_DURATION = {"not_recorded", "days", "weeks", "months"}
+_CAPABILITY = {"available", "not_available", "not_recorded"}
+
+
+def _effort(value) -> dict:
+    required = {"decision_to_change", "cost_level", "duration_level", "laboratory_capability", "basis"}
+    if not isinstance(value, dict) or set(value) != required:
+        raise ValueError(f"Effort must contain exactly {sorted(required)}.")
+    if value["decision_to_change"] not in _DECISIONS:
+        raise ValueError("Unsupported decision_to_change.")
+    if value["cost_level"] not in _COST or value["duration_level"] not in _DURATION or value["laboratory_capability"] not in _CAPABILITY:
+        raise ValueError("Cost, duration, and laboratory capability must use the recorded level labels.")
+    _nonempty_string(value["basis"], "effort.basis")
+    return value
+
+
 def review_plan(plan_directory, plan_id: str, review_path, destination) -> Path:
     root, manifest = read_archive(plan_directory, "theraweave.validation-plans")
     context = read_member(root, manifest, "context.json")
@@ -67,7 +102,7 @@ def review_plan(plan_directory, plan_id: str, review_path, destination) -> Path:
     if plan["status"] != "draft":
         raise ValueError("Review accepts a draft plan only; create a new revision for changes.")
     review = read_json(Path(review_path))
-    required = {"reviewer", "reviewed_at", "rationale", "primary_endpoint", "design", "decision_rule"}
+    required = {"reviewer", "reviewed_at", "rationale", "primary_endpoint", "design", "decision_rule", "effort"}
     if not isinstance(review, dict) or set(review) != required:
         raise ValueError(f"Review must contain exactly {sorted(required)}.")
     for key in ("reviewer", "reviewed_at", "rationale"):
@@ -93,13 +128,15 @@ def review_plan(plan_directory, plan_id: str, review_path, destination) -> Path:
     # A narrow interpretable feedback rule. Other rules require a new version.
     if review["decision_rule"] != "benefit_ci_excludes_zero_and_point_meets_minimum":
         raise ValueError("Unsupported pre-specified outcome decision rule.")
+    effort = _effort(review["effort"])
     assessment = read_member(root, manifest, "assessment_reference.json")
     row = next(r for r in assessment["assessments"] if r["hypothesis_id"] == plan["hypothesis_id"])
     if row["bucket"] == "hold_for_review":
         raise ValueError("Blocking risk must first be resolved in a new assessment.")
     reviewed = {**plan, "version": plan["version"] + 1, "status": "reviewed", "primary_endpoint": endpoint,
-                "design": design, "decision_rule": review["decision_rule"], "review": review,
-                "unresolved": [], "previous_plan_sha256": content_id(plan)}
+                "design": design, "decision_rule": review["decision_rule"], "review": review, "effort": effort,
+                "execution_ready": False, "computed_sample_size": None, "information_gain": None,
+                "claims_reduced_experiment_count": False, "unresolved": [], "previous_plan_sha256": content_id(plan)}
     with new_archive(destination, format_name="theraweave.reviewed-plan", identity={"parent_run_id": manifest["run_id"],
                      "plan_id": plan_id, "review_hash": content_id(review)}, forbidden_roots=[root]) as temp:
         write_json(temp / "context.json", context)
@@ -164,4 +201,56 @@ def record_outcome(reviewed_directory, outcome_path, destination) -> Path:
         write_json(temp / "context.json", context)
         write_json(temp / "feedback.json", feedback)
         write_json(temp / "reviewed_plan.json", plan)
+    return Path(destination).resolve()
+
+
+_BUCKET_LEVEL = {"functional_validation_ready": 0, "evidence_gap_first": 1, "conflict_resolution_first": 1, "hold_for_review": 2}
+
+
+def record_override(assessment_directory, override_path, destination) -> Path:
+    """Record a human decision that cannot relax the algorithm bucket or clear a blocking risk."""
+    root, manifest = read_archive(assessment_directory, "theraweave.assessment-preview")
+    context = read_member(root, manifest, "context.json")
+    assessments = read_member(root, manifest, "assessments.json")
+    options = read_member(root, manifest, "intervention_options.json")
+    links = read_member(root, manifest, "reaction_links.json")
+    override = read_json(Path(override_path))
+    required = {"hypothesis_id", "operator", "overridden_at", "rationale", "requested_bucket", "evidence_ids"}
+    if not isinstance(override, dict) or set(override) != required:
+        raise ValueError(f"Override must contain exactly {sorted(required)}.")
+    for key in ("hypothesis_id", "operator", "overridden_at", "rationale"):
+        _nonempty_string(override[key], key)
+    datetime.fromisoformat(override["overridden_at"].replace("Z", "+00:00"))
+    if override["requested_bucket"] not in _BUCKET_LEVEL:
+        raise ValueError("Unsupported decision bucket.")
+    evidence_ids = override["evidence_ids"]
+    if (not isinstance(evidence_ids, list) or not evidence_ids or len(evidence_ids) != len(set(evidence_ids))
+            or any(not isinstance(item, str) or not item.strip() for item in evidence_ids)):
+        raise ValueError("Override must cite unique evidence identifiers from this hypothesis.")
+    matches = [row for row in assessments if row["hypothesis_id"] == override["hypothesis_id"]]
+    if len(matches) != 1:
+        raise ValueError("Hypothesis ID is missing or ambiguous.")
+    row = matches[0]
+    if any(item not in set(row["evidence_ids"]) | set(row["knowledge_evidence_ids"]) for item in evidence_ids):
+        raise ValueError("Override evidence identifiers must belong to this hypothesis.")
+    algorithm_bucket = row.get("algorithm_bucket", row["bucket"])
+    requested = override["requested_bucket"]
+    if _BUCKET_LEVEL[requested] < _BUCKET_LEVEL[algorithm_bucket] or _BUCKET_LEVEL[requested] < _BUCKET_LEVEL[row["bucket"]]:
+        raise ValueError("An override cannot relax the algorithm bucket or clear a blocking risk.")
+    updated = [{**item, "algorithm_bucket": algorithm_bucket, "bucket": requested} if item["hypothesis_id"] == row["hypothesis_id"] else item
+               for item in assessments]
+    prior = read_member(root, manifest, "decision_log.json") if any(entry["path"] == "decision_log.json" for entry in manifest["files"]) else []
+    if not isinstance(prior, list):
+        raise ValueError("Existing decision log is unreadable.")
+    entry = {"hypothesis_id": row["hypothesis_id"], "algorithm_bucket": algorithm_bucket, "previous_bucket": row["bucket"],
+             "requested_bucket": requested, "accepted_bucket": requested, "operator": override["operator"],
+             "overridden_at": override["overridden_at"], "rationale": override["rationale"], "evidence_ids": evidence_ids,
+             "relaxes_algorithm_decision": False, "clears_blocking_risk": False}
+    with new_archive(destination, format_name="theraweave.assessment-preview", identity={"parent_run_id": manifest["run_id"],
+                     "override_hash": content_id(override)}, forbidden_roots=[root]) as temp:
+        write_json(temp / "context.json", context)
+        write_json(temp / "assessments.json", updated)
+        write_json(temp / "intervention_options.json", options)
+        write_json(temp / "reaction_links.json", links)
+        write_json(temp / "decision_log.json", prior + [entry])
     return Path(destination).resolve()

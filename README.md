@@ -5,7 +5,7 @@ TheraWeave 旨在将多组学分析结果与外部生物医学证据结合，形
 
 生态定位：OmicsWeave 负责定量与模型质量，TheraWeave 聚焦疾病/实验上下文中的靶点证据和验证决定；结构、结合与分子性质问题可在后续按需要衔接 Schrödinger 等专业平台。双方在靶点评估、数据整合和实验反馈上有重叠，差异化需通过具体研究效用验证。
 
-当前版本为 **`0.1.0.dev0`，本地研究闭环预览**（2026-10-30）：已实现 OmicsWeave `0.1` 草案导入与校验、证据去重归档、三个知识来源的本地子集转换、按规则的候选证据画像、敏感性分析、验证计划、显式审查与结果回流。正式 v1、真实数据库快照及真实课题上的科学验收尚待完成；当前规则未校准为预测模型。
+当前版本为 **`0.1.0.dev0`，本地研究闭环预览**（2026-10-31）：已实现 OmicsWeave `0.1` 草案导入与校验、证据去重归档、三个知识来源的本地子集转换、按规则的候选证据画像、敏感性分析、审查后的同源与反应映射、模态条件筛查、验证计划、显式审查、人工覆盖与结果回流。正式 v1、真实数据库快照及真实课题上的科学验收尚待完成；当前规则未校准为预测模型。模态表不产生排序或治疗推荐。
 
 当前工作区的最短体验路径（在仓库根目录，使用已安装的隔离环境；目标目录需不存在）：
 
@@ -22,6 +22,8 @@ TheraWeave 旨在将多组学分析结果与外部生物医学证据结合，形
 .\.venv\Scripts\python.exe -m theraweave assess local/my-report --snapshot local/my-demo/knowledge/OpenTargets.synthetic.json --snapshot local/my-demo/knowledge/UniProt.synthetic.json --snapshot local/my-demo/knowledge/ChEMBL.synthetic.json --output local/my-assessment
 .\.venv\Scripts\python.exe -m theraweave plan local/my-assessment --output local/my-plans
 ```
+
+`assess` 可以额外接收 `--ortholog-map`、`--reaction-map` 和 `--genetic-evidence`。评估会记录疾病与治疗符号是否相反，并写出不含准确率的描述性对照。候选清单用 `screen-candidates`，它不读取差异统计。计划审查需要记录要区分的决定和成本等级，但不计算样本量。`prepare-external-request` 与 `record-external-result` 只保存外部计算的请求和预测结果，不运行外部程序。需要把算法分桶改得更保守时，使用 `record-override`；它不能清除阻断风险。字段和限制见[本地闭环说明](docs/local_discovery_workflow.md)。
 
 完整合成演示（包含模拟审查和模拟结果）可运行 `python tools/run_preview_demo.py local/my-full-demo`。真实研究的审查和结果必须由实际资料填写，不能套用演示内容。
 

@@ -45,6 +45,10 @@
           "statement": {"type": "string", "minLength": 1},
           "blocking": {"type": "boolean"},
           "tool_id": {"type": ["string", "null"], "minLength": 1},
+          "modality": {"enum": ["small_molecule", "antibody", "peptide", "siRNA", "ASO", "mRNA", "gene_delivery", "DNA_editing"]},
+          "intervention_mechanism": {"enum": ["inhibition", "activation", "receptor_antagonism", "receptor_agonism", "RNA_knockdown", "splice_modulation", "gene_supplementation", "gene_editing"]},
+          "subcellular_location": {"enum": ["extracellular", "plasma_membrane", "intracellular"]},
+          "protein_class": {"enum": ["enzyme", "receptor", "transporter", "secreted", "other"]},
           "source_payload": {"type": "object"}
         }
       }

@@ -31,6 +31,8 @@ def main():
         "primary_endpoint": {"name": "synthetic phenotype", "unit": "arbitrary_units", "desired_direction": "decrease", "minimum_meaningful_effect": 1.0, "confidence_level": 0.95},
         "design": {k: "Synthetic pre-specified design; no actual experiment" for k in ("experimental_unit", "sample_size_basis", "randomization", "blinding", "comparison", "multiplicity_plan", "exclusions", "controls")},
         "decision_rule": "benefit_ci_excludes_zero_and_point_meets_minimum",
+        "effort": {"decision_to_change": "marker_versus_functional_link", "cost_level": "not_recorded", "duration_level": "weeks",
+                   "laboratory_capability": "not_recorded", "basis": "Synthetic demonstration; no experiment cost was calculated"},
     }
     write_json(root / "synthetic-review.json", review)
     reviewed = review_plan(plans, plan["plan_id"], root / "synthetic-review.json", root / "reviewed")
