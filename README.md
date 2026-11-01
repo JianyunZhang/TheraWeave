@@ -23,7 +23,7 @@ TheraWeave 旨在将多组学分析结果与外部生物医学证据结合，形
 .\.venv\Scripts\python.exe -m theraweave plan local/my-assessment --output local/my-plans
 ```
 
-`assess` 可以额外接收 `--ortholog-map`、`--reaction-map` 和 `--genetic-evidence`。评估会记录疾病与治疗符号是否相反，并写出不含准确率的描述性对照。候选清单用 `screen-candidates`，它不读取差异统计。计划审查需要记录要区分的决定和成本等级，但不计算样本量。`prepare-external-request` 与 `record-external-result` 只保存外部计算的请求和预测结果，不运行外部程序。需要把算法分桶改得更保守时，使用 `record-override`；它不能清除阻断风险。字段和限制见[本地闭环说明](docs/local_discovery_workflow.md)。
+`assess` 可以额外接收 `--ortholog-map`、`--reaction-map` 和 `--genetic-evidence`。评估会记录疾病与治疗符号是否相反，并写出不含准确率的描述性对照。候选清单用 `screen-candidates`，它不读取差异统计。计划审查需要记录要区分的决定和成本等级，但不计算样本量。`prepare-external-request` 与 `record-external-result` 只保存外部计算的请求和预测结果，不运行外部程序。`review-compounds` 把直接靶点线索、同通路线索和理化性质分开，不检索在线药物库，也不做虚拟筛选。`record-readouts` 把接合、功能、通量、疾病读数和非特异损害分开；损害或尚未建立的扰动不会被记成治疗支持。需要把算法分桶改得更保守时，使用 `record-override`；它不能清除阻断风险。字段和限制见[本地闭环说明](docs/local_discovery_workflow.md)。
 
 完整合成演示（包含模拟审查和模拟结果）可运行 `python tools/run_preview_demo.py local/my-full-demo`。真实研究的审查和结果必须由实际资料填写，不能套用演示内容。
 

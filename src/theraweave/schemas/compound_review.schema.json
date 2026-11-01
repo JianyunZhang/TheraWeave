@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reviewed local compound records; not a drug database or ADMET model",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "version", "reviewed", "reviewer", "synthetic", "records"],
+  "properties": {
+    "format": {"const": "theraweave.compound-review"},
+    "version": {"const": "0.1"},
+    "reviewed": {"const": true},
+    "reviewer": {"type": "string", "minLength": 1},
+    "synthetic": {"type": "boolean"},
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["record_id", "compound_id", "entity_id", "namespace", "taxon_id", "assay_taxon_id", "context_id", "link_type", "direction", "approval_status", "assay_type", "activity_type", "relation", "value", "unit", "property_kind", "property_basis", "indication", "citations", "statement", "reviewed", "reviewer"],
+        "properties": {
+          "record_id": {"type": "string", "minLength": 1},
+          "compound_id": {"type": "string", "minLength": 1},
+          "entity_id": {"type": "string", "minLength": 1},
+          "namespace": {"type": "string", "minLength": 1},
+          "taxon_id": {"enum": [10090, 9606]},
+          "assay_taxon_id": {"enum": [10090, 9606]},
+          "context_id": {"type": ["string", "null"], "minLength": 1},
+          "link_type": {"enum": ["direct_target", "pathway_only", "property_only"]},
+          "direction": {"enum": ["inhibit", "activate", "restore", "unknown"]},
+          "approval_status": {"enum": ["approved", "investigational", "none", "not_recorded"]},
+          "assay_type": {"enum": ["binding", "functional", "phenotypic", "cytotoxicity", "unknown"]},
+          "activity_type": {"enum": ["Ki", "Kd", "IC50", "EC50", null]},
+          "relation": {"enum": ["=", "<", ">", "<=", ">=", null]},
+          "value": {"type": ["number", "null"]},
+          "unit": {"type": ["string", "null"], "minLength": 1},
+          "property_kind": {"type": ["string", "null"], "minLength": 1},
+          "property_basis": {"enum": ["measured", "predicted", null]},
+          "indication": {"type": ["string", "null"], "minLength": 1},
+          "citations": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "statement": {"type": "string", "minLength": 1},
+          "reviewed": {"type": "boolean"},
+          "reviewer": {"type": ["string", "null"], "minLength": 1}
+        }
+      }
+    }
+  }
+}

@@ -133,6 +133,35 @@ python -m theraweave prepare-external-request local/my-assessment --request loca
 python -m theraweave record-external-result local/external-request --result local/result.json --output local/external-result
 ```
 
-## 9. 当前真实课题准备情况
+## 9. 化合物记录
+
+`review-compounds` 读取 `theraweave.compound-review` 0.1，并要求每条记录对应评估中的实体。判定顺序是：
+
+| 记录 | 结果 |
+|---|---|
+| 未审查 | 只保留，不采用 |
+| 理化性质 | `property_record`。预测值保持预测，不与活性混排，也不形成 ADMET 结论 |
+| 只说明同一通路 | `pathway_clue`。批准状态不能把它升成再利用候选 |
+| 细胞毒性或表型测定 | `not_target_engagement`。这类测定不能代替结合或功能实验 |
+| 适应证上下文、测定物种或方向不符 | 分别保留不匹配原因 |
+| 直接靶点、结合或功能测定、物种、上下文和方向都相符 | `repurposing_clue`。这不是治疗推荐，选择性和暴露仍未建立 |
+
+活性必须同时给出类型、关系、数值和单位。不同活性类型不产生效力排序。合成化合物记录只能用于明确标为 synthetic 的评估。
+
+```powershell
+python -m theraweave review-compounds local/my-assessment --compounds local/compounds.json --output local/compound-review
+```
+
+## 10. 读数链反馈
+
+`record-readouts` 用在已经审查的计划上，和主要终点的定量反馈分开保存。五层都必须出现一次：靶点接合、功能活性、通量或机制、疾病读数、非特异损害。每层状态是 `supported`、`not_supported`、`inconclusive` 或 `not_measured`。
+
+只有接合和功能已经成立、疾病读数支持预定利益、并且非特异损害明确未被观察到时，该计划才记为 `supported`。损害被观察到时，即使表型改善也记为 `inconclusive`。接合没有建立时，不能用表型失败来否证假设。通量标记为不适用时不能另报通量结果；标记为适用时，通量未建立则整条链不能记为支持。`species_translation_claimed` 必须为 false，`global_target_refuted` 保持 false。
+
+```powershell
+python -m theraweave record-readouts local/reviewed --readouts local/readouts.json --output local/readout-chain
+```
+
+## 11. 当前真实课题准备情况
 
 项目负责人已指定首发的代谢病研究课题；课题标识和具体研究信息保存在 git 忽略的本地工作区，没有作为公开数据库样例。当前尚无结果包，因此完成的是研究问题、比较目标、已确认给药记录和缺失项整理；不能据此产生真实靶点排名或验证结论。

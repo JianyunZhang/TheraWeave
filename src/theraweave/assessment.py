@@ -204,7 +204,8 @@ def assess_archive(import_directory, destination, *, snapshot_paths=(), policy=N
                 "policy": policy, "knowledge_hash": content_id(knowledge),
                 "ortholog_map_sha256": None if ortholog_doc is None else ortholog_doc["sha256"],
                 "reaction_map_sha256": None if reaction_doc is None else reaction_doc["sha256"],
-                "genetic_evidence_sha256": None if genetic_doc is None else genetic_doc["sha256"]}
+                "genetic_evidence_sha256": None if genetic_doc is None else genetic_doc["sha256"],
+                "synthetic_input": manifest.get("synthetic_input") is True}
     with new_archive(destination, format_name="theraweave.assessment-preview", identity=identity, forbidden_roots=[root]) as temp:
         write_json(temp / "context.json", context)
         write_json(temp / "assessments.json", assessments)

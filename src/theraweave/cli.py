@@ -13,8 +13,9 @@ from .demo import create_demo
 from .project import DiscoveryProject
 from .assessment import assess_archive
 from .knowledge import load_snapshots
-from .planning import create_plans, review_plan, record_outcome, record_override
+from .planning import create_plans, review_plan, record_outcome, record_override, record_readouts
 from .candidates import screen_candidates
+from .compounds import review_compounds
 from .external import prepare_external_request, record_external_result
 from .core import read_json
 from .source_adapters import convert_source
@@ -56,6 +57,10 @@ def main(argv: list[str] | None = None) -> int:
     feedback.add_argument("reviewed_plan", type=Path)
     feedback.add_argument("--outcome", required=True, type=Path)
     feedback.add_argument("--output", required=True, type=Path)
+    readouts = commands.add_parser("record-readouts", help="Record engagement, function, flux, phenotype, and nonspecific harm without collapsing them.")
+    readouts.add_argument("reviewed_plan", type=Path)
+    readouts.add_argument("--readouts", required=True, type=Path)
+    readouts.add_argument("--output", required=True, type=Path)
     override = commands.add_parser("record-override", help="Record a more conservative decision without erasing the algorithm bucket.")
     override.add_argument("assessment", type=Path)
     override.add_argument("--override", required=True, type=Path)
@@ -72,6 +77,10 @@ def main(argv: list[str] | None = None) -> int:
     prediction.add_argument("request", type=Path)
     prediction.add_argument("--result", required=True, type=Path)
     prediction.add_argument("--output", required=True, type=Path)
+    compounds = commands.add_parser("review-compounds", help="Separate direct-target clues, pathway clues, and physicochemical properties.")
+    compounds.add_argument("assessment", type=Path)
+    compounds.add_argument("--compounds", required=True, type=Path)
+    compounds.add_argument("--output", required=True, type=Path)
     for name in ("validate", "import"):
         command = commands.add_parser(name, help="Validate a draft bundle." if name == "validate" else "Create a new evidence archive and offline report.")
         command.add_argument("bundle", type=Path)
@@ -103,6 +112,8 @@ def main(argv: list[str] | None = None) -> int:
             output = {"output": str(review_plan(args.plans, args.plan_id, args.review, args.output)), "status": "reviewed"}
         elif args.command == "record-outcome":
             output = {"output": str(record_outcome(args.reviewed_plan, args.outcome, args.output))}
+        elif args.command == "record-readouts":
+            output = {"output": str(record_readouts(args.reviewed_plan, args.readouts, args.output)), "global_target_refuted": False}
         elif args.command == "record-override":
             output = {"output": str(record_override(args.assessment, args.override, args.output)), "relaxes_algorithm_decision": False}
         elif args.command == "screen-candidates":
@@ -112,6 +123,8 @@ def main(argv: list[str] | None = None) -> int:
             output = {"output": str(prepare_external_request(args.assessment, args.request, args.output)), "executed": False}
         elif args.command == "record-external-result":
             output = {"output": str(record_external_result(args.request, args.result, args.output)), "evidence_level": "predicted"}
+        elif args.command == "review-compounds":
+            output = {"output": str(review_compounds(args.assessment, args.compounds, args.output)), "therapeutic_recommendation": False}
         elif args.command == "validate":
             bundle = validate_bundle(args.bundle, allow_draft=args.allow_draft)
             if args.context and bundle.report.valid:

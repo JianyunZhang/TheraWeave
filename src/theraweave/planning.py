@@ -204,6 +204,72 @@ def record_outcome(reviewed_directory, outcome_path, destination) -> Path:
     return Path(destination).resolve()
 
 
+_READOUTS = ("target_engagement", "functional_activity", "flux_or_mechanism", "disease_phenotype", "nonspecific_harm")
+_READOUT_STATUS = {"supported", "not_supported", "inconclusive", "not_measured"}
+
+
+def record_readouts(reviewed_directory, readouts_path, destination) -> Path:
+    """Interpret a readout chain without letting harm or a failed perturbation refute the target."""
+    root, manifest = read_archive(reviewed_directory, "theraweave.reviewed-plan")
+    context = read_member(root, manifest, "context.json")
+    plan = read_member(root, manifest, "plan.json")
+    report = read_json(Path(readouts_path))
+    required = {"plan_id", "plan_version", "qc_passed", "flux_applicable", "species_translation_claimed",
+                "observed_by", "source_analysis", "execution_deviations", "layers"}
+    if not isinstance(report, dict) or set(report) != required:
+        raise ValueError(f"Readouts must contain exactly {sorted(required)}.")
+    if report["plan_id"] != plan["plan_id"] or report["plan_version"] != plan["version"]:
+        raise ValueError("Readouts must reference the exact reviewed plan version.")
+    if type(report["qc_passed"]) is not bool or type(report["flux_applicable"]) is not bool or report["species_translation_claimed"] is not False:
+        raise ValueError("QC and flux applicability must be boolean, and species translation cannot be claimed.")
+    for key in ("observed_by", "source_analysis", "execution_deviations"):
+        _nonempty_string(report[key], key)
+    layers = report["layers"]
+    if not isinstance(layers, list) or len(layers) != len(_READOUTS):
+        raise ValueError("The readout chain needs each layer exactly once.")
+    by_layer = {}
+    for layer in layers:
+        if not isinstance(layer, dict) or set(layer) != {"layer", "status", "note"}:
+            raise ValueError("Each readout needs layer, status, and note.")
+        if layer["layer"] in by_layer or layer["layer"] not in _READOUTS or layer["status"] not in _READOUT_STATUS:
+            raise ValueError("Readout layers must be the known chain and cannot repeat.")
+        _nonempty_string(layer["note"], layer["layer"])
+        by_layer[layer["layer"]] = layer["status"]
+    if not report["flux_applicable"] and by_layer["flux_or_mechanism"] != "not_measured":
+        raise ValueError("A flux readout cannot be supplied when flux is not applicable.")
+    interpretation, reason = _readout_interpretation(by_layer, report["flux_applicable"], report["qc_passed"])
+    feedback = {"hypothesis_id": plan["hypothesis_id"], "plan_id": plan["plan_id"], "plan_version": plan["version"],
+                "interpretation": interpretation, "reason": reason, "readouts": report, "scope": "this_plan_and_context_only",
+                "global_target_refuted": False, "species_translation": False, "replaces_primary_endpoint": False,
+                "requires_scientific_review": True}
+    with new_archive(destination, format_name="theraweave.readout-chain", identity={"parent_run_id": manifest["run_id"],
+                     "readout_hash": content_id(report)}, forbidden_roots=[root]) as temp:
+        write_json(temp / "context.json", context)
+        write_json(temp / "feedback.json", feedback)
+        write_json(temp / "reviewed_plan.json", plan)
+    return Path(destination).resolve()
+
+
+def _readout_interpretation(layers: dict, flux_applicable: bool, qc_passed: bool) -> tuple[str, str]:
+    if not qc_passed:
+        return "inconclusive", "Quality requirements were not met."
+    if layers["nonspecific_harm"] == "supported":
+        return "inconclusive", "Nonspecific harm was observed, so the phenotype is not counted as therapeutic support."
+    if layers["target_engagement"] != "supported":
+        return "inconclusive", "Without established target engagement, the phenotype cannot support or refute the hypothesis."
+    if layers["functional_activity"] != "supported":
+        return "inconclusive", "Functional activity was not established."
+    if flux_applicable and layers["flux_or_mechanism"] != "supported":
+        return "inconclusive", "The applicable flux or mechanism readout was not established."
+    if layers["nonspecific_harm"] != "not_supported":
+        return "inconclusive", "Nonspecific harm was not shown to be absent."
+    if layers["disease_phenotype"] == "supported":
+        return "supported", "Engagement, function, and the disease readout support this plan, and nonspecific harm was not observed."
+    if layers["disease_phenotype"] == "not_supported":
+        return "not_supported", "The disease readout does not support the prespecified benefit in this plan."
+    return "inconclusive", "The disease readout is incomplete."
+
+
 _BUCKET_LEVEL = {"functional_validation_ready": 0, "evidence_gap_first": 1, "conflict_resolution_first": 1, "hold_for_review": 2}
 
 
